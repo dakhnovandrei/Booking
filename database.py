@@ -2,18 +2,18 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, Asyn
 from sqlalchemy import MetaData
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, declared_attr
 from sqlalchemy import Integer, func
-from dotenv import load_dotenv
+from env import DATABASE_URL
 from datetime import datetime
-import asyncio
-import os
 
-load_dotenv()
-DATABASE_URL = os.getenv('DATABASE_URL')
+
+
+
+
 meta = MetaData()
 
 
 engine = create_async_engine(DATABASE_URL, echo=True)
-async_session_maker = async_sessionmaker(engine, expire_on_commit=True)
+async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
 class Base(AsyncAttrs, DeclarativeBase):
     __abstract__ = True
