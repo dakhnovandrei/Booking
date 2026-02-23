@@ -8,6 +8,10 @@ class Settings(BaseSettings):
     DB_NAME: str
     DB_PASSWORD: str
     DB_USER: str
+    ACCESS_TOKEN_LIFETIME: int
+    REFRESH_TOKEN_LIFETIME: int
+    SECRET_KEY: str
+    ALGORITHM: str
 
     model_config = SettingsConfigDict(
         env_file=os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '.env')

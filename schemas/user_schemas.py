@@ -27,3 +27,13 @@ class UserUpdate(BaseModel):
     user_type: UserType | None
     email: EmailStr | None = Field(..., min_length=3, max_length=200, examples='example@mail.ru')
     phone: str | None = Field(..., examples='+79123126775')
+
+
+class UserLogin(BaseModel):
+    email: EmailStr = Field(..., min_length=3, max_length=200, examples='example@mail.ru')
+    password: str
+
+
+class AuthResponse(BaseModel):
+    access_token: str
+    refresh_token: str
