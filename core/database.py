@@ -2,18 +2,13 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, Asyn
 from sqlalchemy import MetaData
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, declared_attr
 from sqlalchemy import Integer, func
-from env import DATABASE_URL
+from core.settings import get_db_url
 from datetime import datetime
 
-
-
-
-
-meta = MetaData()
-
-
+DATABASE_URL = get_db_url()
 engine = create_async_engine(DATABASE_URL, echo=True)
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
+
 
 class Base(AsyncAttrs, DeclarativeBase):
     __abstract__ = True
@@ -24,5 +19,3 @@ class Base(AsyncAttrs, DeclarativeBase):
     @declared_attr.directive
     def __tablename__(cls) -> str:
         return cls.__name__.lower() + 's'
-    
-

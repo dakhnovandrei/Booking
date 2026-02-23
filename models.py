@@ -1,29 +1,8 @@
 from datetime import datetime, date
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import ForeignKey, Enum, Index, Numeric, String
-from database import Base
-import enum
-
-class UserType(str, enum.Enum):
-    GUEST = 'guest'
-    OWNER = 'owner'
-    OWNER_GUEST = 'owner_guest'
-
-class BookingStatus(str, enum.Enum):
-    CREATED = 'created'
-    REJECTED = 'rejected'
-    CONFIRMED = "confirmed"
-
-class RoomStatus(str, enum.Enum):
-    ACTIVE = "active"
-    HIDDEN = "hidden"
-    BLOCKED = "blocked"
-
-class PaymentStatus(str, enum.Enum):
-    PENDING = "pending"
-    PAID = "paid"
-    FAILED = "failed"
-
+from core.database import Base
+from sql_enums import PaymentStatus, UserType, BookingStatus, RoomStatus
 
 
 class User(Base):
@@ -43,36 +22,34 @@ class Room(Base):
     title: Mapped[str] = mapped_column(String(100))
     description: Mapped[str] = mapped_column(String(1000))
 
-
     country: Mapped[str] = mapped_column(String(100))
     city: Mapped[str] = mapped_column(String(100))
     adress: Mapped[str] = mapped_column(String(100))
 
-
     property_type: Mapped[str] = mapped_column(String(100))
     room_type: Mapped[str] = mapped_column(String(100))
-        
+
     guests_cnt: Mapped[int]
     bedrooms: Mapped[int]
     beds: Mapped[int]
     bathrooms: Mapped[int]
 
-
-    base_price: Mapped[Numeric] = mapped_column(Numeric(10,2))
+    base_price: Mapped[Numeric] = mapped_column(Numeric(10, 2))
     currency: Mapped[str] = mapped_column(String(100))
-    cleaning_fee: Mapped[Numeric] = mapped_column(Numeric(10,2))
-    security_deposit: Mapped[Numeric] = mapped_column(Numeric(10,2))
-    weekend_multiplier: Mapped[Numeric] = mapped_column(Numeric(10,2))
+    cleaning_fee: Mapped[Numeric] = mapped_column(Numeric(10, 2))
+    security_deposit: Mapped[Numeric] = mapped_column(Numeric(10, 2))
+    weekend_multiplier: Mapped[Numeric] = mapped_column(Numeric(10, 2))
 
     min_stay: Mapped[int]
     max_stay: Mapped[int]
-    
+
     is_available: Mapped[bool] = mapped_column(default=True, index=True)
     status: Mapped[RoomStatus] = mapped_column(Enum(RoomStatus), index=True, default=RoomStatus.ACTIVE)
-    last_booked_at: Mapped[datetime| None] = mapped_column(index=True)
+    last_booked_at: Mapped[datetime | None] = mapped_column(index=True)
 
     bookings = relationship('Booking', back_populates='property')
     availability = relationship('AvailabilityCalendar', back_populates='room')
+
 
 class Booking(Base):
     booking_number: Mapped[int] = mapped_column(unique=True, index=True)
@@ -90,7 +67,8 @@ class Booking(Base):
 
     currency: Mapped[str]
 
-    payment_status: Mapped[PaymentStatus] = mapped_column(Enum(PaymentStatus), default=PaymentStatus.PENDING, index=True)
+    payment_status: Mapped[PaymentStatus] = mapped_column(Enum(PaymentStatus), default=PaymentStatus.PENDING,
+                                                          index=True)
     cancelled: Mapped[bool] = mapped_column(default=False)
 
     cancelled_by: Mapped[int | None] = mapped_column(ForeignKey('users.id'), nullable=True)
@@ -100,18 +78,19 @@ class Booking(Base):
     guest = relationship('User', back_populates='guest_bookings')
     property = relationship('Room', back_populates='bookings')
     dates = relationship('AvailabilityCalendar', back_populates='booking')
-    
+
 
 class AvailabilityCalendar(Base):
     property_id: Mapped[int] = mapped_column(ForeignKey('rooms.id', ondelete='CASCADE'), index=True)
     date: Mapped[date] = mapped_column(index=True)
-    price: Mapped[Numeric] = mapped_column(Numeric(10,2))
+    price: Mapped[Numeric] = mapped_column(Numeric(10, 2))
     booking_id: Mapped[int | None] = mapped_column(ForeignKey('bookings.id'), nullable=True)
     is_available: Mapped[bool] = mapped_column(default=True)
     is_blocked: Mapped[bool] = mapped_column(default=False)
     is_checked_out: Mapped[bool] = mapped_column(default=True)
     room = relationship('Room', back_populates='availability')
     booking = relationship('Booking', back_populates='dates')
+
 
 Index(
     'ix_unique_room_date',
