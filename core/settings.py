@@ -3,6 +3,9 @@ import os
 
 
 class Settings(BaseSettings):
+    """
+    Подгрузка глобальных переменных из файла .env
+    """
     DB_HOST: str
     DB_PORT: str
     DB_NAME: str

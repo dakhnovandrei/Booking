@@ -4,6 +4,9 @@ import re
 
 
 class UserRegister(BaseModel):
+    """
+    Схема значений для регистрации пользователя
+    """
     first_name: str = Field(..., min_length=2, max_length=100, examples='Alex')
     second_name: str = Field(..., min_length=2, max_length=100, examples='Volchckov')
     password: str = Field(..., min_length=8, max_length=50)
@@ -14,6 +17,11 @@ class UserRegister(BaseModel):
     @validator(phone)
     @classmethod
     def validate_phone(cls, value: str) -> str:
+        """
+        Проверка валидности номера телефона.
+        :param value:
+        :return:
+        """
         if not re.match(r'^\+\d{5,15}$', value):
             raise ValueError('Номер телефона должен начинаться с "+" и содержать от 5 до 15 цифр')
         return value
