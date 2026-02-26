@@ -24,10 +24,6 @@ class Base(AsyncAttrs, DeclarativeBase):
         return cls.__name__.lower() + 's'
 
 
-@asynccontextmanager
 async def get_session() -> AsyncSession:
-    async with async_session_maker as session:
-        try:
-            yield session
-        finally:
-            await session.close()
+    async with async_session_maker() as session:
+        yield session

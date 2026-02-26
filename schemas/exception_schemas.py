@@ -12,3 +12,4 @@ class ErrorWithJWT(Exception):
 
 class UserNotFound(Exception):
     pass
+

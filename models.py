@@ -1,8 +1,10 @@
-from datetime import datetime, date
+from datetime import datetime
+import datetime as dt
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import ForeignKey, Enum, Index, Numeric, String
 from core.database import Base
 from sql_enums import PaymentStatus, UserType, BookingStatus, RoomStatus
+from decimal import Decimal
 
 
 class User(Base):
@@ -14,7 +16,15 @@ class User(Base):
     user_type: Mapped[UserType] = mapped_column(Enum(UserType), index=True)
     is_verified: Mapped[bool] = mapped_column(default=False)
     verification_lvl: Mapped[int] = mapped_column(default=0)
-    guest_bookings = relationship('Booking', back_populates='guest')
+    guest_bookings: Mapped[list["Booking"]] = relationship(
+        back_populates='guest',
+        foreign_keys='Booking.guest_id'
+    )
+
+    cancelled_bookings: Mapped[list["Booking"]] = relationship(
+        back_populates='cancelled_by_user',
+        foreign_keys='Booking.cancelled_by'
+    )
 
 
 class Room(Base):
@@ -34,11 +44,11 @@ class Room(Base):
     beds: Mapped[int]
     bathrooms: Mapped[int]
 
-    base_price: Mapped[Numeric] = mapped_column(Numeric(10, 2))
+    base_price: Mapped[Decimal] = mapped_column(Numeric(10, 2))
     currency: Mapped[str] = mapped_column(String(100))
-    cleaning_fee: Mapped[Numeric] = mapped_column(Numeric(10, 2))
-    security_deposit: Mapped[Numeric] = mapped_column(Numeric(10, 2))
-    weekend_multiplier: Mapped[Numeric] = mapped_column(Numeric(10, 2))
+    cleaning_fee: Mapped[Decimal] = mapped_column(Numeric(10, 2))
+    security_deposit: Mapped[Decimal] = mapped_column(Numeric(10, 2))
+    weekend_multiplier: Mapped[Decimal] = mapped_column(Numeric(10, 2))
 
     min_stay: Mapped[int]
     max_stay: Mapped[int]
@@ -47,8 +57,8 @@ class Room(Base):
     status: Mapped[RoomStatus] = mapped_column(Enum(RoomStatus), index=True, default=RoomStatus.ACTIVE)
     last_booked_at: Mapped[datetime | None] = mapped_column(index=True)
 
-    bookings = relationship('Booking', back_populates='property')
-    availability = relationship('AvailabilityCalendar', back_populates='room')
+    bookings: Mapped[list["Booking"]] = relationship(back_populates="property")
+    availability: Mapped[list["AvailabilityCalendar"]] = relationship(back_populates="room")
 
 
 class Booking(Base):
@@ -62,8 +72,8 @@ class Booking(Base):
     check_in: Mapped[datetime]
     check_out: Mapped[datetime]
 
-    price_per_night: Mapped[Numeric] = mapped_column(Numeric(10, 2))
-    total_amount: Mapped[Numeric] = mapped_column(Numeric(10, 2))
+    price_per_night: Mapped[Decimal] = mapped_column(Numeric(10, 2))
+    total_amount: Mapped[Decimal] = mapped_column(Numeric(10, 2))
 
     currency: Mapped[str]
 
@@ -75,21 +85,29 @@ class Booking(Base):
 
     expires_at: Mapped[datetime]
 
-    guest = relationship('User', back_populates='guest_bookings')
-    property = relationship('Room', back_populates='bookings')
-    dates = relationship('AvailabilityCalendar', back_populates='booking')
+    guest: Mapped["User"] = relationship(
+        back_populates="guest_bookings",
+        foreign_keys=[guest_id]
+    )
+
+    cancelled_by_user: Mapped["User"] = relationship(
+        back_populates="cancelled_bookings",
+        foreign_keys=[cancelled_by]
+    )
+    property: Mapped[list["Room"]] = relationship(back_populates='bookings')
+    dates: Mapped[list["AvailabilityCalendar"]] = relationship(back_populates="booking")
 
 
 class AvailabilityCalendar(Base):
     property_id: Mapped[int] = mapped_column(ForeignKey('rooms.id', ondelete='CASCADE'), index=True)
-    date: Mapped[date] = mapped_column(index=True)
-    price: Mapped[Numeric] = mapped_column(Numeric(10, 2))
+    date: Mapped[dt.date] = mapped_column(index=True)
+    price: Mapped[Decimal] = mapped_column(Numeric(10, 2))
     booking_id: Mapped[int | None] = mapped_column(ForeignKey('bookings.id'), nullable=True)
     is_available: Mapped[bool] = mapped_column(default=True)
     is_blocked: Mapped[bool] = mapped_column(default=False)
     is_checked_out: Mapped[bool] = mapped_column(default=True)
-    room = relationship('Room', back_populates='availability')
-    booking = relationship('Booking', back_populates='dates')
+    room: Mapped["Room"] = relationship(back_populates="availability")
+    booking: Mapped["Booking"] = relationship(back_populates="dates")
 
 
 Index(

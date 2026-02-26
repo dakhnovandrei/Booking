@@ -1,11 +1,18 @@
 import datetime
 from typing import Any
 
-from jwt_functions import InvalidTokenError
+from fastapi import Cookie, Depends
+from jwt import InvalidTokenError
+from pydantic import ValidationError
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.database import get_session
 from core.settings import settings
-from jose import jwt, ExpiredSignatureError
+from jose import jwt, ExpiredSignatureError, JWTError
 from datetime import datetime as dt
+
+from repositories.user_repo import UserRepo
+from schemas.exception_schemas import UserNotFound
 
 
 def create_token(data: dict, token_type: str,
@@ -47,3 +54,33 @@ def decode_access_token(token: str) -> dict[str, Any]:
         raise ExpiredSignatureError("Access token истёк")
     except InvalidTokenError:
         raise InvalidTokenError("Невалидный access token")
+
+
+def decode_refresh_token(token: str) -> dict[str, Any]:
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        if payload.get('type') != 'refresh':
+            raise ValueError("Неверный тип токена")
+        exp = payload.get('sub')
+        if not exp or dt.utcfromtimestamp(exp) < dt.utcnow():
+            raise ValueError('Токен истек')
+        return payload
+    except JWTError:
+        raise ValueError("Неверный refresh токен")
+
+
+async def get_current_user(access_token: str = Cookie(None), session: AsyncSession = Depends(get_session)):
+    user_repo = UserRepo(session)
+    if not access_token:
+        raise UserNotFound('Токен отсутствует')
+    try:
+        payload = decode_access_token(access_token)
+        user_id: int = payload.get('sub')
+        if not user_id:
+            raise UserNotFound('Неверный токен')
+        user = await user_repo.get_user_by_id(user_id)
+        if not user:
+            raise UserNotFound("Пользователь не найден")
+        return user
+    except (JWTError, ValidationError):
+        raise UserNotFound('Пользователь не найден')
