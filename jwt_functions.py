@@ -20,18 +20,18 @@ def create_token(data: dict, token_type: str,
     to_encode = data.copy()
     to_encode.update({'token_type': token_type})
     expire = datetime.datetime.utcnow() + (expires_delta or datetime.timedelta(
-        minutes=settings.ACCESS_TOKEN_LIFETIME if token_type == 'access' else settings.REFRESH_TOKEN_LIFETIME
+        minutes=settings.ACCESS_TOKEN_LIFETIME if token_type == 'access_token' else settings.REFRESH_TOKEN_LIFETIME
     ))
     to_encode.update({'exp': expire})
     return jwt.encode(to_encode, settings.SECRET_KEY, settings.ALGORITHM)
 
 
 def create_access_token(data: dict, expires_delta: datetime.timedelta | None = None):
-    return create_token(data, 'access', expires_delta)
+    return create_token(data, 'access_token', expires_delta)
 
 
 def create_refresh_token(data: dict, expires_delta: datetime.timedelta | None = None):
-    return create_token(data, 'refresh', expires_delta)
+    return create_token(data, 'refresh_token', expires_delta)
 
 
 def decode_access_token(token: str) -> dict[str, Any]:
@@ -59,12 +59,14 @@ def decode_access_token(token: str) -> dict[str, Any]:
 def decode_refresh_token(token: str) -> dict[str, Any]:
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        if payload.get('type') != 'refresh':
+        if payload.get('token_type') != 'refresh_token':
             raise ValueError("Неверный тип токена")
-        exp = payload.get('sub')
-        if not exp or dt.utcfromtimestamp(exp) < dt.utcnow():
+        exp = payload.get('exp')
+        if not exp or datetime.datetime.now(datetime.timezone.utc).timestamp() > exp:
             raise ValueError('Токен истек')
         return payload
+    except ExpiredSignatureError:
+        raise ValueError("Refresh токен истек")
     except JWTError:
         raise ValueError("Неверный refresh токен")
 
@@ -75,7 +77,7 @@ async def get_current_user(access_token: str = Cookie(None), session: AsyncSessi
         raise UserNotFound('Токен отсутствует')
     try:
         payload = decode_access_token(access_token)
-        user_id: int = payload.get('sub')
+        user_id: int = int(payload.get('sub'))
         if not user_id:
             raise UserNotFound('Неверный токен')
         user = await user_repo.get_user_by_id(user_id)

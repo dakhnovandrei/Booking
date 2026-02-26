@@ -50,6 +50,7 @@ async def login(user_data: UserLogin, response: Response, session: AsyncSession 
             secure=False,  # Change if u go into production
             samesite='lax'
         )
+
         return AuthResponse(access_token=access_token, refresh_token=refresh_token)
     except UserDidntExist:
         raise HTTPException(status_code=401, detail='Неверный email или пароль')
@@ -73,8 +74,8 @@ async def refresh(response: Response, refresh_token: str | None = Cookie(default
             secure=False,
             samesite='lax',
         )
-    except Exception:
-        raise HTTPException(status_code=401, detail='Невалидный refresh token')
+    except Exception as e:
+        raise HTTPException(status_code=401, detail=f'Невалидный refresh token {e}')
 
 
 @router.post('/logout')

@@ -59,8 +59,8 @@ class UserService:
         if not existing_user or pwd_context.verify(password_bytes, existing_user.password):
             raise UserDidntExist('Неправильная почта или пароль')
 
-        access_token = create_access_token({'sub': existing_user.id, 'role': existing_user.user_type})
-        refresh_token = create_refresh_token({'sub': existing_user.id, 'role': existing_user.user_type})
+        access_token = create_access_token({'sub': str(existing_user.id), 'role': existing_user.user_type})
+        refresh_token = create_refresh_token({'sub': str(existing_user.id), 'role': existing_user.user_type})
 
         return access_token, refresh_token
 
@@ -78,9 +78,9 @@ class UserService:
         except InvalidTokenError:
             raise InvalidToken('Ошибка в токене')
 
-        user = await self.user_repo.get_user_by_id(payload['sub'])
+        user = await self.user_repo.get_user_by_id(int(payload['sub']))
         if not user:
-            raise UserNotFound(f'Пользователя с id: {payload["sub"]} не существует')
+            raise UserNotFound(f'Пользователя с id: {int(payload["sub"])} не существует')
 
         return user
 
@@ -122,11 +122,11 @@ class UserService:
     async def refresh_access_token(self, refresh_token: str) -> str:
         payload = decode_refresh_token(refresh_token)
         user_id = payload.get('sub')
-        user = await self.user_repo.get_user_by_id(user_id)
+        user = await self.user_repo.get_user_by_id(int(user_id))
         if not user:
             raise UserNotFound("Пользователь не найден")
         new_access_token = create_access_token({
-            'sub': user.id,
+            'sub': str(user.id),
             'role': user.user_type
         })
         return new_access_token
