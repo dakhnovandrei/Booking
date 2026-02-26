@@ -3,7 +3,7 @@ import datetime as dt
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import ForeignKey, Enum, Index, Numeric, String
 from core.database import Base
-from sql_enums import PaymentStatus, UserType, BookingStatus, RoomStatus
+from sql_enums import PaymentStatus, UserType, BookingStatus, RoomStatus, RoomType, Currency
 from decimal import Decimal
 
 
@@ -34,10 +34,9 @@ class Room(Base):
 
     country: Mapped[str] = mapped_column(String(100))
     city: Mapped[str] = mapped_column(String(100))
-    adress: Mapped[str] = mapped_column(String(100))
+    address: Mapped[str] = mapped_column(String(250))
 
-    property_type: Mapped[str] = mapped_column(String(100))
-    room_type: Mapped[str] = mapped_column(String(100))
+    property_type: Mapped[RoomType] = mapped_column(Enum(RoomType), index=True)
 
     guests_cnt: Mapped[int]
     bedrooms: Mapped[int]
@@ -45,7 +44,7 @@ class Room(Base):
     bathrooms: Mapped[int]
 
     base_price: Mapped[Decimal] = mapped_column(Numeric(10, 2))
-    currency: Mapped[str] = mapped_column(String(100))
+    currency: Mapped[Currency] = mapped_column(Enum(Currency))
     cleaning_fee: Mapped[Decimal] = mapped_column(Numeric(10, 2))
     security_deposit: Mapped[Decimal] = mapped_column(Numeric(10, 2))
     weekend_multiplier: Mapped[Decimal] = mapped_column(Numeric(10, 2))

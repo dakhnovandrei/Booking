@@ -56,7 +56,7 @@ async def login(user_data: UserLogin, response: Response, session: AsyncSession 
         raise HTTPException(status_code=401, detail='Неверный email или пароль')
 
 
-@router.post('/refresh')
+@router.post('/refresh', tags=["User_Auth"])
 async def refresh(response: Response, refresh_token: str | None = Cookie(default=None),
                   session: AsyncSession = Depends(get_session)):
     if not refresh_token:
@@ -78,7 +78,7 @@ async def refresh(response: Response, refresh_token: str | None = Cookie(default
         raise HTTPException(status_code=401, detail=f'Невалидный refresh token {e}')
 
 
-@router.post('/logout')
+@router.post('/logout', tags=["User_Auth"])
 def logout(response: Response):
     response.delete_cookie('access_token')
     response.delete_cookie('refresh_token')
