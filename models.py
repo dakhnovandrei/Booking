@@ -111,7 +111,7 @@ class AvailabilityCalendar(Base):
 
 Index(
     'ix_unique_room_date',
-    AvailabilityCalendar.date,
     AvailabilityCalendar.property_id,
+    AvailabilityCalendar.date,
     unique=True
 )

@@ -50,4 +50,42 @@ class RoomCreate(BaseModel):
 
 
 class RoomUpdate(BaseModel):
-    pass
+    title: str | None = Field(min_length=5, max_length=100, examples=['Студия 22м^2'])
+    description: str | None = Field(min_length=10, max_length=1000, examples=['Красивая студия расположенная там то'])
+
+    country: str | None = Field(min_length=3, max_length=100, examples=['Россия'])
+    city: str | None = Field(min_length=3, max_length=100, examples=['Москва'])
+    address: str | None = Field(min_length=5, max_length=250, examples=['Молодежная улица дом 5 корпус 3'])
+
+    property_type: RoomType
+
+    guests_cnt: int | None = Field(ge=1, examples=[2])
+    bedrooms: int | None = Field(ge=1, examples=[1])
+    beds: int | None = Field(ge=1, examples=[5])
+    bathrooms: int | None = Field(ge=1, examples=[2])
+
+    base_price: PriceDecimal
+    currency: Currency
+    cleaning_fee: PriceDecimal
+    security_deposit: Decimal | None = Field(ge=1.0, le=100_000_000, max_digits=12, decimal_places=2,
+                                             examples=[Decimal('12.99')])
+    weekend_multiplier: Decimal | None = Field(ge=1.0, le=100_000_000, max_digits=12, decimal_places=2,
+                                               examples=[Decimal('2.50')])
+
+    min_stay: int | None = Field(ge=1, description='Минимально количество зарезервированных дней')
+    max_stay: int | None = Field(ge=1, description='Максимальное количество зарезервированных дней')
+
+    is_available: bool | None
+    status: RoomStatus
+
+
+class RoomSearchParams(BaseModel):
+    country: str | None = None
+    city: str | None = None
+    guests: int | None = None
+    min_price: Decimal | None = None
+    max_price: Decimal | None = None
+    check_in: datetime.date | None = None
+    check_out: datetime.date | None = None
+    page: int = 1
+    page_size: int = 10
