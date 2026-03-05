@@ -11,10 +11,11 @@ class RoomRepo:
         self.session = session
 
     async def create_room(self, user_id: int, room_data: RoomCreate) -> model:
-        new_instance = self.model(owner_id=user_id, **room_data.model_dump())
+        room_dict = room_data.model_dump()
+        room_dict['owner_id'] = user_id
+        new_instance = self.model(**room_dict)
         self.session.add(new_instance)
-        await self.session.commit()
-        await self.session.refresh(new_instance)
+        await self.session.flush()
         return new_instance
 
     async def get_room_by_id(self, room_id: int) -> model:
