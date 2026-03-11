@@ -1,4 +1,4 @@
-from sqlalchemy import select, delete, func
+from sqlalchemy import select, delete, func, insert, update
 from models import Room, AvailabilityCalendar
 from schemas.room_schemas import RoomCreate, RoomUpdate, RoomSearchParams
 from sql_enums import RoomStatus
@@ -50,7 +50,7 @@ class RoomRepo:
                 select(AvailabilityCalendar.property_id).where(
                     AvailabilityCalendar.date >= filters.check_in,
                     AvailabilityCalendar.date < filters.check_out,
-                    AvailabilityCalendar.is_available == True,
+                    AvailabilityCalendar.is_available is True,
                     AvailabilityCalendar.booking_id.is_(None)
                 )
                 .group_by(AvailabilityCalendar.property_id)
@@ -67,6 +67,6 @@ class RoomRepo:
 
     async def delete_room(self, room_id: int):
         await self.session.execute(
-            delete(self.model).where(self.model.id == room_id)
+            update(self.model).where(self.model.id == room_id).values(status=RoomStatus.HIDDEN)
         )
         await self.session.commit()

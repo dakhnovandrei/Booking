@@ -13,5 +13,10 @@ class ErrorWithJWT(Exception):
 class UserNotFound(Exception):
     pass
 
+
 class InvalidUserType(Exception):
+    pass
+
+
+class RoomNotFound(Exception):
     pass

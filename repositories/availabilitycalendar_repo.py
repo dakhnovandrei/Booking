@@ -1,7 +1,5 @@
 from datetime import date, timedelta
-
-from sqlalchemy.ext.asyncio import AsyncSession
-
+from sqlalchemy import select, update
 from models import AvailabilityCalendar, Room
 
 
@@ -29,3 +27,10 @@ class AvailabilityCalendarRepo:
             dates.append(calendar_date)
         self.session.add_all(dates)
         await self.session.flush()
+
+    async def get_dates_range(self):
+        pass
+
+    async def block_dates(self, room_id: int, start_date: date, end_date: date):
+        dates = update(AvailabilityCalendar).where(room_id == AvailabilityCalendar.property_id).values()
+        pass
