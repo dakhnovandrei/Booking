@@ -17,7 +17,7 @@ class RoomService:
         if user.user_type == 'guest':
             raise InvalidUserType('Вы не можете создавать объявления')
 
-        room = self.room_repo.create_room(user.id, **room_data.model_dump())
+        room = await self.room_repo.create_room(user.id, **room_data.model_dump())
         await self.calendar_repo.create_calendar(room.id)
 
         return room
@@ -33,7 +33,7 @@ class RoomService:
         return await self.room_repo.listing_room(room_params)
 
     async def update_room(self, room_id: int, user: User, data: RoomUpdate):
-        room = self.room_repo.get_room_by_id(room_id)
+        room = await self.room_repo.get_room_by_id(room_id)
         if not room:
             raise RoomNotFound(f"Комнаты не существует")
         if user.user_type == 'guest':
@@ -42,7 +42,7 @@ class RoomService:
         await self.room_repo.update_room_info(room, data)
 
     async def delete_room(self, room_id: int, owner: User):
-        room = self.room_repo.get_room_by_id(room_id)
+        room = await self.room_repo.get_room_by_id(room_id)
         if not room:
             raise RoomNotFound("Комната не найдена")
         if owner.user_type == 'guest':
