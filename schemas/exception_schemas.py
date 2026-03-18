@@ -20,3 +20,7 @@ class InvalidUserType(Exception):
 
 class RoomNotFound(Exception):
     pass
+
+
+class DatesNotFound(Exception):
+    pass

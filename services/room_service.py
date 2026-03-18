@@ -14,8 +14,8 @@ class RoomService:
         if user.user_type == 'guest':
             raise InvalidUserType('Вы не можете создавать объявления')
         async with self.uow as uow:
-            room = await uow.room.create_room(user.id, **room_data.model_dump())
-            await uow.calendar.create_calendar(room.id)
+            room = await uow.room.create_room(user.id, room_data)
+            await uow.calendar.create_calendar(room)
         return room
 
     async def get_room_by_id(self, room_id: int):
@@ -39,9 +39,9 @@ class RoomService:
             if user.user_type == 'guest':
                 raise InvalidUserType("Пользователь не имеет права сдавать жилье в аренду")
 
-            await uow.room.update_room_info(room, data)
+        return await uow.room.update_room_info(room, data)
 
-    async def delete_room(self, room_id: int, owner: User):
+    async def delete_rooms(self, room_id: int, owner: User):
         async with self.uow as uow:
             room = await uow.room.get_room_by_id(room_id)
             if not room:

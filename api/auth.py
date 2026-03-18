@@ -18,7 +18,6 @@ router = APIRouter()
 async def register(user_data: UserRegister, uow: UnitOfWork = Depends(get_uow)):
     user_service = UserService(uow)
     try:
-
         reg_user = await user_service.register(user_data)
         return {'detail': f'Зарегистрирован новый пользователь {reg_user.id}'}
     except UserAlreadyExist:

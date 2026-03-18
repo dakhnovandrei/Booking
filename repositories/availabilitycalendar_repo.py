@@ -34,6 +34,20 @@ class AvailabilityCalendarRepo:
         results = self.session.execute(stmt)
         return results.scalar.all()
 
+    async def release_booking_dates(self, room_id: int, start_date: date, end_date: date):
+        stmt = update(self.model).where(self.model.property_id == room_id).where(
+            between(self.model.date, start_date, end_date)
+        ).values(
+            is_available=True,
+            is_blocked=False
+        )
+        await self.session.execute(stmt)
+        await self.session.flush()
+
+    async def set_booking(self, room_id: int, start_date: date, end_date: date):
+        #SELECT FOR UPDATE
+        pass
+
     async def block_dates(self, room_id: int, start_date: date, end_date: date):
         dates = update(self.model).where(self.model.property_id == room_id).where(
             between(self.model.date, start_date, end_date)).values(

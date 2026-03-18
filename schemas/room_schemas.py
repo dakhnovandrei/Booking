@@ -1,7 +1,7 @@
 import datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, Field, model_validator, condecimal
+from pydantic import BaseModel, Field, model_validator, condecimal, ConfigDict
 
 from sql_enums import RoomType, RoomStatus, Currency
 
@@ -89,3 +89,31 @@ class RoomSearchParams(BaseModel):
     check_out: datetime.date | None = None
     page: int = 1
     page_size: int = 10
+
+
+class RoomDTO(BaseModel):
+    owner_id: int
+    title: str
+    description: str
+    country: str
+    city: str
+    address: str
+    property_type: RoomType
+    guests_cnt: int
+    bedrooms: int
+    beds: int
+    bathrooms: int
+    base_price: PriceDecimal
+    currency: Currency
+    cleaning_fee: PriceDecimal
+    security_deposit: Decimal
+    weekend_multiplier: Decimal
+    min_stay: int
+    max_stay: int
+    is_available: bool
+    status: RoomStatus
+    model_config = ConfigDict(from_attributes=True)
+
+
+class RoomList(BaseModel):
+    pass # Дописать респонс модель для поиска комнат.

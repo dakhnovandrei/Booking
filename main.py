@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from authx import AuthXConfig, AuthX
 from api.auth import router
 from core.database import engine, Base
+from api.rooms import router as room_router
 
 config = AuthXConfig()
 config.JWT_SECRET_KEY = 'SECRET_KEY'
@@ -12,6 +13,7 @@ security = AuthX(config=config)
 app = FastAPI()
 
 app.include_router(router, prefix='/api/auth')
+app.include_router(room_router, prefix='/api')
 
 
 @app.on_event("startup")
