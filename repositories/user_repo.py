@@ -20,7 +20,7 @@ class UserRepo:
         """
         new_instance = self.model(**user_data.model_dump())
         self.session.add(new_instance)
-        await self.session.commit()
+        await self.session.flush()
         await self.session.refresh(new_instance)
         return new_instance
 
@@ -67,7 +67,7 @@ class UserRepo:
         updated_data = data.model_dump(exclude_unset=True)
         for key, value in updated_data.items():
             setattr(user, key, value)
-        await self.session.commit()
+        await self.session.flush()
         await self.session.refresh(user)
         return user
 
@@ -78,4 +78,4 @@ class UserRepo:
         :return: None
         """
         await self.session.delete(user)
-        await self.session.commit()
+        await self.session.flush()

@@ -19,7 +19,7 @@ class RoomRepo:
         return new_instance
 
     async def get_room_by_id(self, room_id: int) -> model:
-        room = self.session.execute(
+        room = await self.session.execute(
             select(self.model).where(self.model.id == room_id)
         )
         return room.scalar_one_or_none()
@@ -28,7 +28,7 @@ class RoomRepo:
         updated_data = room_data.model_dump(exclude_unset=True)
         for key, value in updated_data.items():
             setattr(room, key, value)
-        await self.session.commit()
+        await self.session.flush()
         await self.session.refresh(room)
         return room
 
@@ -50,7 +50,7 @@ class RoomRepo:
                 select(AvailabilityCalendar.property_id).where(
                     AvailabilityCalendar.date >= filters.check_in,
                     AvailabilityCalendar.date < filters.check_out,
-                    AvailabilityCalendar.is_available is True,
+                    AvailabilityCalendar.is_available.is_(True),
                     AvailabilityCalendar.booking_id.is_(None)
                 )
                 .group_by(AvailabilityCalendar.property_id)
@@ -69,4 +69,4 @@ class RoomRepo:
         await self.session.execute(
             update(self.model).where(self.model.id == room_id).values(status=RoomStatus.HIDDEN)
         )
-        await self.session.commit()
+        await self.session.flush()

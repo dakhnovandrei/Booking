@@ -1,5 +1,5 @@
 from datetime import date, timedelta
-from sqlalchemy import select, update
+from sqlalchemy import select, update, between
 from models import AvailabilityCalendar, Room
 
 
@@ -28,9 +28,15 @@ class AvailabilityCalendarRepo:
         self.session.add_all(dates)
         await self.session.flush()
 
-    async def get_dates_range(self):
-        pass
+    async def get_dates_range(self, room_id: int, start_date: date, end_date: date):
+        stmt = select(self.model).where(self.model.property_id == room_id).where(
+            between(self.model.date, start_date, end_date)).where(self.model.is_available.is_(True))
+        results = self.session.execute(stmt)
+        return results.scalar.all()
 
     async def block_dates(self, room_id: int, start_date: date, end_date: date):
-        dates = update(AvailabilityCalendar).where(room_id == AvailabilityCalendar.property_id).values()
-        pass
+        dates = update(self.model).where(self.model.property_id == room_id).where(
+            between(self.model.date, start_date, end_date)).values(
+            is_available=False, is_blocked=True)
+        await self.session.execute(dates)
+        await self.session.flush()

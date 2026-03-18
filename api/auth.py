@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response, Cookie
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from UOW import UnitOfWork, get_uow
 from core.settings import settings
 from core.database import get_session
 from jwt_functions import get_current_user
@@ -14,12 +15,11 @@ router = APIRouter()
 
 
 @router.post('/reg', tags=['User_Auth'])
-async def register(user_data: UserRegister, session: AsyncSession = Depends(get_session)):
-    user_repo = UserRepo(session)
-    user_service = UserService(user_repo)
+async def register(user_data: UserRegister, uow: UnitOfWork = Depends(get_uow)):
+    user_service = UserService(uow)
     try:
-        async with session.begin():
-            reg_user = await user_service.register(user_data)
+
+        reg_user = await user_service.register(user_data)
         return {'detail': f'Зарегистрирован новый пользователь {reg_user.id}'}
     except UserAlreadyExist:
         raise HTTPException(status_code=409, detail='Пользователь уже существует')
@@ -28,9 +28,8 @@ async def register(user_data: UserRegister, session: AsyncSession = Depends(get_
 
 
 @router.post('/login', tags=['User_Auth'], response_model=AuthResponse)
-async def login(user_data: UserLogin, response: Response, session: AsyncSession = Depends(get_session)):
-    user_repo = UserRepo(session)
-    user_service = UserService(user_repo)
+async def login(user_data: UserLogin, response: Response, uow: UnitOfWork = Depends(get_uow)):
+    user_service = UserService(uow)
     try:
         access_token, refresh_token = await user_service.login(user_data)
         response.set_cookie(
@@ -58,11 +57,10 @@ async def login(user_data: UserLogin, response: Response, session: AsyncSession 
 
 @router.post('/refresh', tags=["User_Auth"])
 async def refresh(response: Response, refresh_token: str | None = Cookie(default=None),
-                  session: AsyncSession = Depends(get_session)):
+                  uow: UnitOfWork = Depends(get_uow)):
     if not refresh_token:
         raise HTTPException(status_code=401, detail='Отсутствует refresh токен')
-    user_repo = UserRepo(session)
-    user_service = UserService(user_repo)
+    user_service = UserService(uow)
     try:
         new_access = await user_service.refresh_access_token(refresh_token)
 
