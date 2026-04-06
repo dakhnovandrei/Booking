@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 import datetime as dt
 
 
-class AvailabilityCalendar(BaseModel):
+class AvailabilityCalendars(BaseModel):
     property_id: int = Field()
     date: dt.date = Field
     price: Decimal = Field
@@ -12,3 +12,6 @@ class AvailabilityCalendar(BaseModel):
     is_available: bool = Field
     is_blocked: bool = Field
     is_checked_out: bool = Field
+
+
+

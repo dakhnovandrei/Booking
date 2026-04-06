@@ -24,3 +24,6 @@ class RoomNotFound(Exception):
 
 class DatesNotFound(Exception):
     pass
+
+class DatesBlockError(Exception):
+    pass

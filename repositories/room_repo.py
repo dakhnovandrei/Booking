@@ -54,7 +54,7 @@ class RoomRepo:
                     AvailabilityCalendar.booking_id.is_(None)
                 )
                 .group_by(AvailabilityCalendar.property_id)
-                .having(func.count() == days_count)
+                .having(func.count(AvailabilityCalendar.id) == days_count)
                 .subquery()
             )
             stmt = stmt.where(Room.id.in_(availability_subquery))

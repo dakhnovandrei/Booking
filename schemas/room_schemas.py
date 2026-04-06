@@ -115,5 +115,3 @@ class RoomDTO(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class RoomList(BaseModel):
-    pass # Дописать респонс модель для поиска комнат.
