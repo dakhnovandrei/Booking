@@ -2,6 +2,7 @@ from core.database import get_session, async_session_maker
 from repositories.availabilitycalendar_repo import AvailabilityCalendarRepo
 from repositories.room_repo import RoomRepo
 from repositories.user_repo import UserRepo
+from repositories.booking_repo import BookingRepo
 
 
 class UnitOfWork:
@@ -13,6 +14,7 @@ class UnitOfWork:
         self.calendar = AvailabilityCalendarRepo(self.session)
         self.user = UserRepo(self.session)
         self.room = RoomRepo(self.session)
+        self.booking = BookingRepo(self.session)
 
         return self
 

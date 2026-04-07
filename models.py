@@ -61,7 +61,7 @@ class Room(Base):
 
 
 class Booking(Base):
-    booking_number: Mapped[int] = mapped_column(unique=True, index=True)
+    booking_number: Mapped[int] = mapped_column(unique=True, index=True) #Хз звчем оно потом мб уберу
     property_id: Mapped[int] = mapped_column(ForeignKey('rooms.id', ondelete='CASCADE'), index=True)
     guest_id: Mapped[int] = mapped_column(ForeignKey('users.id'), index=True)
     guest_cnt: Mapped[int]
